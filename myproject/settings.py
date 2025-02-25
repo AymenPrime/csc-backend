@@ -28,7 +28,8 @@ DEBUG = True
 ALLOWED_HOSTS = [
     "csc-backend-production.up.railway.app",
     "127.0.0.1",
-    "localhost",]
+    "localhost",
+    "bucolic-centaur-674eb4.netlify.app",]
 
 
 # Application definition
@@ -134,7 +135,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ORIGIN_ALLOW_ALL = True
 
 CORS_ORIGIN_WHITELIST = [
-    'http://localhost:3000',  # Allow your React frontend
+    'https://bucolic-centaur-674eb4.netlify.app/',  # Allow your React frontend
 ]
 
 MEDIA_URL = '/media/'  # URL prefix for media files
