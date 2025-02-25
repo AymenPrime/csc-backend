@@ -135,7 +135,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ORIGIN_ALLOW_ALL = True
 
 CORS_ORIGIN_WHITELIST = [
-    'https://csc-leaderboard.netlify.app/',  # Allow your React frontend
+    'http://localhost:3000',  # Allow your React frontend
 ]
 
 MEDIA_URL = '/media/'  # URL prefix for media files
