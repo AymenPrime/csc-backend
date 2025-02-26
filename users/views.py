@@ -77,3 +77,14 @@ class DeleteUserView(APIView):
             return Response({'message': 'User deleted successfully'}, status=status.HTTP_200_OK)
         except User.DoesNotExist:
             return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
+class UpdateProfilePictureView(APIView):
+    def put(self, request, user_id):
+        try:
+            user = User.objects.get(id=user_id)
+            user.picture = request.FILES.get('picture')
+            user.save()
+            serializer = UserSerializer(user)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except User.DoesNotExist:
+            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
