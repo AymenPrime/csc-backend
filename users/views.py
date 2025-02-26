@@ -6,6 +6,7 @@ from .serializers import UserSerializer
 from django.contrib.auth import authenticate, login
 from django.middleware.csrf import get_token
 from django.http import JsonResponse
+from rest_framework.permissions import IsAuthenticated
 
 # Pre-generated verification codes
 PRE_GENERATED_CODES = [
@@ -15,12 +16,10 @@ PRE_GENERATED_CODES = [
     'T1U2V3', 'W4X5Y6', 'Z7A8B9', 'C1D2E3', 'F4G5H6'
 ]
 
-
 class RegisterView(APIView):
     def post(self, request):
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
-            # Create a new user using the custom User model
             user = User.objects.create_user(
                 name=serializer.validated_data['name'],
                 password=serializer.validated_data['password'],
@@ -33,16 +32,14 @@ class RegisterView(APIView):
 
 class LoginView(APIView):
     def post(self, request):
-        name = request.data.get('name')  # Use 'name' instead of 'username'
+        name = request.data.get('name')
         password = request.data.get('password')
 
-        # Authenticate the user using the custom User model
         user = authenticate(request, name=name, password=password)
 
         if user is not None:
-            # Log the user in
             login(request, user)
-            return Response({'message': 'Login successful'}, status=status.HTTP_200_OK)
+            return Response({'message': 'Login successful', 'token': user.auth_token.key}, status=status.HTTP_200_OK)
         else:
             return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
 
@@ -52,7 +49,6 @@ def get_csrf_token(request):
 
 class LeaderboardView(APIView):
     def get(self, request):
-        # Fetch users sorted by points in descending order
         users = User.objects.exclude(name='cscadmin').order_by('-points')
         serializer = UserSerializer(users, many=True)
         return Response(serializer.data)
@@ -62,7 +58,7 @@ class UpdatePointsView(APIView):
         try:
             user = User.objects.get(id=user_id)
             points_to_add = int(request.data.get('points', 0))
-            user.points += points_to_add  # Add points to the existing points
+            user.points += points_to_add
             user.save()
             serializer = UserSerializer(user)
             return Response(serializer.data)
@@ -79,10 +75,18 @@ class DeleteUserView(APIView):
             return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
 
 class UpdateProfilePictureView(APIView):
+    permission_classes = [IsAuthenticated]  # Ensure the user is logged in
+
     def put(self, request, user_id):
         try:
             user = User.objects.get(id=user_id)
-            user.picture = request.FILES.get('picture')
+            if request.user.id != user.id:  # Ensure the user is updating their own picture
+                return Response({'error': 'You do not have permission to update this profile picture'}, status=status.HTTP_403_FORBIDDEN)
+            
+            if 'picture' not in request.FILES:
+                return Response({'error': 'No file uploaded'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            user.picture = request.FILES['picture']
             user.save()
             serializer = UserSerializer(user)
             return Response(serializer.data, status=status.HTTP_200_OK)

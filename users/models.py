@@ -23,7 +23,7 @@ class User(AbstractBaseUser):
     points = models.IntegerField(default=0)
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
-    last_login = models.DateTimeField(null=True, blank=True)  # Add this line
+    last_login = models.DateTimeField(null=True, blank=True)
 
     objects = UserManager()
 
