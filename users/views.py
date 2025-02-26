@@ -6,6 +6,7 @@ from .serializers import UserSerializer
 from django.contrib.auth import authenticate, login
 from django.middleware.csrf import get_token
 from django.http import JsonResponse
+from rest_framework.parsers import MultiPartParser, FormParser
 
 # Pre-generated verification codes
 PRE_GENERATED_CODES = [
@@ -75,5 +76,25 @@ class DeleteUserView(APIView):
             user = User.objects.get(id=user_id)
             user.delete()
             return Response({'message': 'User deleted successfully'}, status=status.HTTP_200_OK)
+        except User.DoesNotExist:
+            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
+
+class UpdateProfilePictureView(APIView):
+    parser_classes = (MultiPartParser, FormParser)
+
+    def post(self, request, user_id):
+        try:
+            user = User.objects.get(id=user_id)
+            if user.name != request.user.name:
+                return Response({'error': 'You can only update your own profile picture'}, status=status.HTTP_403_FORBIDDEN)
+            
+            picture = request.FILES.get('picture')
+            if picture:
+                user.picture = picture
+                user.save()
+                return Response({'message': 'Profile picture updated successfully'}, status=status.HTTP_200_OK)
+            else:
+                return Response({'error': 'No picture provided'}, status=status.HTTP_400_BAD_REQUEST)
         except User.DoesNotExist:
             return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)

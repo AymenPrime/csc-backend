@@ -8,4 +8,5 @@ urlpatterns = [
     path('update-points/<int:user_id>/', UpdatePointsView.as_view(), name='update-points'),
     path('delete-user/<int:user_id>/', DeleteUserView.as_view(), name='delete-user'),  # Add this line
     path('csrf/', get_csrf_token, name='csrf'),
+    path('update-profile-picture/<int:user_id>/', UpdateProfilePictureView.as_view(), name='update-profile-picture'),
 ]
